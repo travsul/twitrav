@@ -1,15 +1,22 @@
+package com.TwiTrav
+
 import twitter4j._
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
 trait TwitterConnection {
-  def getConfig(consumerKey: String,
-                consumerSecret: String,
-                accessToken: String,
-                accessTokenSecret: String): conf.Configuration = {
+  implicit val formats = DefaultFormats
+
+  private[this] val secrets = parse(scala.io.Source.fromFile("secrets.json").getLines.mkString).extract[Secrets]
+  private[this] val config = getConfig(secrets)
+  private[this] val streamFactory = new TwitterStreamFactory(config)
+  
+  def getConfig(secrets: Secrets): conf.Configuration = {
     new twitter4j.conf.ConfigurationBuilder()
-                      .setOAuthConsumerKey(consumerKey)
-                      .setOAuthConsumerSecret(consumerSecret)
-                      .setOAuthAccessToken(accessToken)
-                      .setOAuthAccessTokenSecret(accessTokenSecret)
+                      .setOAuthConsumerKey(secrets.consumerKey)
+                      .setOAuthConsumerSecret(secrets.consumerSecret)
+                      .setOAuthAccessToken(secrets.accessToken)
+                      .setOAuthAccessTokenSecret(secrets.accessTokenSecret)
                       .build()
   }
 
@@ -29,10 +36,16 @@ trait TwitterConnection {
     def onStallWarning(warning: StallWarning) {}
   }
 
-  def getStream(config: conf.Configuration, searchQuery: Array[String]): TwitterStream = {
-    val twitterStream = new TwitterStreamFactory(config).getInstance
+  def getFilteredStream(searchQuery: Array[String]): TwitterStream = {
+    val twitterStream = streamFactory.getInstance
     twitterStream.addListener(simpleStatusListener)
     twitterStream.filter(new FilterQuery().track(searchQuery))
+    twitterStream
+  }
+
+  def getStream: TwitterStream = {
+    val twitterStream = streamFactory.getInstance
+    twitterStream.addListener(simpleStatusListener)
     twitterStream
   }
 
@@ -42,11 +55,7 @@ trait TwitterConnection {
   }
 }
 object StatusStreamer extends TwitterConnection {
-  val config = getConfig(consumerKey,consumerSecret,accessToken,accessTokenSecret)
-
   def main(args: Array[String]) {
-    val stream = getStream(config,Array("melanie"))
-    Thread.sleep(10000)
-    closeStream(stream)
+    getStream.sample
   }
 }
