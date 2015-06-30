@@ -1,6 +1,6 @@
 *.class
 *.log
-*.json
+secrets.json
 
 # sbt specific
 .cache

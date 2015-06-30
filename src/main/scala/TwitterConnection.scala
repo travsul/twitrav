@@ -7,10 +7,8 @@ import org.json4s.jackson.JsonMethods._
 trait TwitterConnection {
   implicit val formats = DefaultFormats
 
-  private[this] val secrets = parse(scala.io.Source.fromFile("secrets.json").getLines.mkString).extract[Secrets]
-  private[this] val config = getConfig(secrets)
-  private[this] val streamFactory = new TwitterStreamFactory(config)
-  
+  private[this] var tweetStream = List[String]()
+
   def getConfig(secrets: Secrets): conf.Configuration = {
     new twitter4j.conf.ConfigurationBuilder()
                       .setOAuthConsumerKey(secrets.consumerKey)
@@ -22,7 +20,7 @@ trait TwitterConnection {
 
   def simpleStatusListener = new StatusListener() {
     def onStatus(status: Status) {
-      println(status.getText)
+      tweetStream = status.getText :: tweetStream
     }
 
     def onDeletionNotice(statusDeletionNotice: StatusDeletionNotice) {}
@@ -36,15 +34,15 @@ trait TwitterConnection {
     def onStallWarning(warning: StallWarning) {}
   }
 
-  def getFilteredStream(searchQuery: Array[String]): TwitterStream = {
-    val twitterStream = streamFactory.getInstance
+  def getFilteredStream(secrets: Secrets, searchQuery: Array[String]): TwitterStream = {
+    val twitterStream = new TwitterStreamFactory(getConfig(secrets)).getInstance
     twitterStream.addListener(simpleStatusListener)
     twitterStream.filter(new FilterQuery().track(searchQuery))
     twitterStream
   }
 
-  def getStream: TwitterStream = {
-    val twitterStream = streamFactory.getInstance
+  def getStream(secrets: Secrets): TwitterStream = {
+    val twitterStream = new TwitterStreamFactory(getConfig(secrets)).getInstance
     twitterStream.addListener(simpleStatusListener)
     twitterStream
   }
@@ -55,7 +53,9 @@ trait TwitterConnection {
   }
 }
 object StatusStreamer extends TwitterConnection {
+  private[this] val secrets = parse(scala.io.Source.fromFile("secrets.json").getLines.mkString).extract[Secrets]
+
   def main(args: Array[String]) {
-    getStream.sample
+    getStream(secrets).sample
   }
 }
