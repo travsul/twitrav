@@ -3,11 +3,12 @@ package com.TwiTrav
 import twitter4j._
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
+import akka.actor.ActorSystem
+import akka.actor.Props
+import akka.actor.Actor
 
-trait TwitterConnection {
+trait TwitterConnection extends StreamRepository {
   implicit val formats = DefaultFormats
-
-  private[this] var tweetStream = List[String]()
 
   def getConfig(secrets: Secrets): conf.Configuration = {
     new twitter4j.conf.ConfigurationBuilder()
@@ -19,9 +20,7 @@ trait TwitterConnection {
   }
 
   def simpleStatusListener = new StatusListener() {
-    def onStatus(status: Status) {
-      tweetStream = status.getText :: tweetStream
-    }
+    def onStatus(status: Status) = addTweet(status)
 
     def onDeletionNotice(statusDeletionNotice: StatusDeletionNotice) {}
 
@@ -52,10 +51,12 @@ trait TwitterConnection {
     stream.shutdown
   }
 }
-object StatusStreamer extends TwitterConnection {
+object StatusStreamer extends TwitterConnection with StreamRepository {
   private[this] val secrets = parse(scala.io.Source.fromFile("secrets.json").getLines.mkString).extract[Secrets]
+  val system = ActorSystem("TweetSystem")
 
   def main(args: Array[String]) {
-    getStream(secrets).sample
+    val actor = system.actorOf(Props[StreamActor],name = "streamactor")
+    actor ! StartStream(secrets)
   }
 }

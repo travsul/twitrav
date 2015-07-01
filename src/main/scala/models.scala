@@ -13,7 +13,9 @@ case class Secrets(consumerKey: String, consumerSecret: String, accessToken: Str
   }
 }
 
-sealed trait GetStream
-case class EmojiStream(secrets: Secrets) extends GetStream
-case class NumberStream(secrets: Secrets) extends GetStream
-case class UrlStream(secrets: Secrets) extends GetStream
+case class StartStream(secrets: Secrets)
+case object EmojiStream
+case object SecondStream
+case object MinuteStream
+case object HourStream
+case object UrlStream
