@@ -3,6 +3,7 @@ package com.TwiTrav
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.JsonDSL._
+import twitter4j._
 
 case class Secrets(consumerKey: String, consumerSecret: String, accessToken: String, accessTokenSecret: String) {
   def toJson = {
@@ -13,9 +14,4 @@ case class Secrets(consumerKey: String, consumerSecret: String, accessToken: Str
   }
 }
 
-case class StartStream(secrets: Secrets)
-case object EmojiStream
-case object SecondStream
-case object MinuteStream
-case object HourStream
-case object UrlStream
+case class AddTweet(tweet: Status)

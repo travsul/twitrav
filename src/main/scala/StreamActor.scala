@@ -3,32 +3,60 @@ package com.TwiTrav
 import akka.actor.Actor
 import akka.actor.ActorSystem
 import akka.actor.Props
-import scala.concurrent.duration._
-import scala.language.postfixOps
+import spray.routing._
+import spray.http._
+import MediaTypes._
+import StreamRepository._
 
-class StreamActor extends Actor with TwitterConnection with StreamRepository {
-  import context._
-  val system = StatusStreamer.system
-
+class StreamActor extends Actor {
   def receive = {
-    case StartStream(secrets) => {
-      getStream(secrets).sample
-      system.scheduler.scheduleOnce(1 seconds,self,SecondStream)
-      system.scheduler.scheduleOnce(1 minutes,self,MinuteStream)
-      system.scheduler.scheduleOnce(1 hours,self,HourStream)
+    case AddTweet(tweet) => {
+      addTweet(tweet)
+      //println(getTweets)
     }
-    case SecondStream => {
-      system.scheduler.scheduleOnce(1 seconds,self,SecondStream)
-      println("Second average: " + getSecondAvg)
+  }
+}
+
+class RouteActor extends Actor with StreamService {
+  def actorRefFactory = context
+
+  def receive = runRoute(streamRoute)
+}
+
+trait StreamService extends HttpService {
+  val streamRoute =
+    path("") {
+      get {
+        respondWithMediaType(`text/html`) {
+          complete {
+            <html>
+            <body>
+            <ul>
+            <li><a href="/timelyData">Time data</a></li>
+            <li><a href="/hourData">Hourly data</a></li>
+            <li><a href="/secondData">Secondly data</a></li>
+            <li><a href="/minuteData">Minutely data</a></li>
+            <li><a href="/emojiData">Emoji data</a></li>
+            <li><a href="/urlData">URL data</a></li>
+            </ul>
+            </body>
+            </html>
+          }
+        }
+      }
+    }~
+  path("hourData") {
+    get {
+      complete {
+        s"${getHourAvg} over ${getHours} hours"
+      }
     }
-    case MinuteStream => {
-      system.scheduler.scheduleOnce(1 minutes,self,MinuteStream)
-      println("Minute average: " + getMinuteAvg)
-      println("Url average: " + getUrlAvg)
-    }
-    case HourStream => {
-      system.scheduler.scheduleOnce(1 hours,self,HourStream)
-      println("Hour average: " + getHourAvg)
+  }~
+  path("secondData") {
+    get {
+      complete {
+        s"${getSecondAvg} over ${getSeconds}"
+      }
     }
   }
 }
