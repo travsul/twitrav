@@ -28,14 +28,23 @@ object StreamRepository {
   def getHashAvg: Int = {
     (tweetStream.map(containsHashTag).filter(s=>s).length.toDouble / getTweets.length.toDouble * 100).toInt
   }
+  def getPicAvg: Int = {
+    (tweetStream.filter(containsPicture).length.toDouble / getTweets.length.toDouble * 100).toInt
+  }
 
   def getTopTenUrl: List[String] = {
-    println(runEncode(getDomains))
     runEncode(getDomains).slice(0,10).map(s=>s"${s._1} @ ${s._2} uses")
   }
 
   def getTopTenHashtags: List[String] = {
     runEncode(gatherHashtags).slice(0,10).map(s=>s"${s._1} @ ${s._2} uses")
+  }
+
+  def getDisplayDomains = {
+    for {
+      tweet <- tweetStream
+      url <- tweet.getURLEntities
+    } yield url.getDisplayURL.mkString
   }
 
   def getDomains = gatherUrls.map(_.split("/")(2))
@@ -58,6 +67,12 @@ object StreamRepository {
     status.getURLEntities.map(_.getExpandedURL.mkString).filter(_.length > 0).length > 0
   }
 
+  def containsPicture(status: Status): Boolean = {
+    status.getURLEntities
+      .map(_.getExpandedURL.mkString)
+      .filter(s=>s.contains("instagram") || s.contains("pic.twiiter.com"))
+      .length > 0
+  }
   def containsHashTag(status: Status): Boolean = {
     status.getHashtagEntities.map(_.getText.mkString).filter(_.length > 0).length > 0
   }
@@ -68,5 +83,9 @@ object StreamRepository {
       val togetherList = urls.map(_.toLowerCase).filter(url => url == head.toLowerCase)
       runEncode(urls.filterNot(url=>url==head), (head,togetherList.length) :: acc)
     }
+  }
+
+  def gatherPictureUrls = {
+    gatherUrls.filter(s=> s.contains("instagram") || s.contains("pic.twiiter.com"))
   }
 }

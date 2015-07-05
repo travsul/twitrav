@@ -70,7 +70,7 @@ trait StreamService extends HttpService {
   path("urlData") {
     get {
       complete {
-        s"${getUrlAvg}% contain urls\n\n" + getTopTenUrl.mkString("\n")
+        s"${getUrlAvg}% contain urls\n${getPicAvg}% contains pictures\n\n" + getTopTenUrl.mkString("\n")
       }
     }
   }~
