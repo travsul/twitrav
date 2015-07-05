@@ -22,8 +22,21 @@ object StreamRepository {
   def getMinuteAvg: Int = divideByTime(tweetStream.length,getMinutes.toInt)
   def getHours: Double = (getTimeSinceStart / 360)
   def getHourAvg: Int = divideByTime(tweetStream.length,getHours.toInt)
-  def getUrlAvg: Int = tweetStream.map(containsUrl).filter(s=>s).length / getTweets.length
-  def getHashAvg: Int = tweetStream.map(containsHashTag).filter(s=>s).length / getTweets.length
+  def getUrlAvg: Int = {
+    (tweetStream.map(containsUrl).filter(s=>s).length.toDouble / getTweets.length.toDouble * 100).toInt
+  }
+  def getHashAvg: Int = {
+    (tweetStream.map(containsHashTag).filter(s=>s).length.toDouble / getTweets.length.toDouble * 100).toInt
+  }
+
+  def getTopTenUrl: List[String] = {
+    println(runEncode(getDomains))
+    runEncode(getDomains).slice(0,10).map(s=>s"${s._1} @ ${s._2} uses")
+  }
+
+  def getTopTenHashtags: List[String] = {
+    runEncode(gatherHashtags).slice(0,10).map(s=>s"${s._1} @ ${s._2} uses")
+  }
 
   def getDomains = gatherUrls.map(_.split("/")(2))
 
@@ -38,14 +51,22 @@ object StreamRepository {
     for {
       tweet <- tweetStream
       url <- tweet.getURLEntities
-    } yield url.getURL.mkString
+    } yield url.getExpandedURL.mkString
   }
 
   def containsUrl(status: Status): Boolean = {
-    status.getURLEntities.map(_.getURL.mkString).filter(_.length > 0).length > 0
+    status.getURLEntities.map(_.getExpandedURL.mkString).filter(_.length > 0).length > 0
   }
 
   def containsHashTag(status: Status): Boolean = {
     status.getHashtagEntities.map(_.getText.mkString).filter(_.length > 0).length > 0
+  }
+
+  def runEncode(urls: List[String],acc: List[(String,Int)] = Nil): List[(String, Int)] = urls match {
+    case Nil => acc.sortBy(s=>s._2).reverse
+    case head :: tail => {
+      val togetherList = urls.map(_.toLowerCase).filter(url => url == head.toLowerCase)
+      runEncode(urls.filterNot(url=>url==head), (head,togetherList.length) :: acc)
+    }
   }
 }

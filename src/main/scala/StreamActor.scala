@@ -38,6 +38,7 @@ trait StreamService extends HttpService {
             <li><a href="/minuteData">Minutely data</a></li>
             <li><a href="/emojiData">Emoji data</a></li>
             <li><a href="/urlData">URL data</a></li>
+            <li><a href="/hashtagData">Hashtag data</a></li>
             </ul>
             </body>
             </html>
@@ -56,6 +57,34 @@ trait StreamService extends HttpService {
     get {
       complete {
         s"${getSecondAvg} over ${getSeconds}"
+      }
+    }
+  }~
+  path("minuteData") {
+    get {
+      complete {
+        s"${getMinuteAvg} over ${getMinutes}"
+      }
+    }
+  }~
+  path("urlData") {
+    get {
+      complete {
+        s"${getUrlAvg}% contain urls\n\n" + getTopTenUrl.mkString("\n")
+      }
+    }
+  }~
+  path("hashtagData") {
+    get {
+      complete {
+        s"${getHashAvg}% contains hashtags\n\n" + getTopTenHashtags.mkString("\n")
+      }
+    }
+  }~
+  path("timelyData") {
+    get {
+      complete {
+        s"${getHourAvg} over ${getHours} hours\n${getMinuteAvg} over ${getMinutes}\n${getSecondAvg} over ${getSeconds}"
       }
     }
   }
