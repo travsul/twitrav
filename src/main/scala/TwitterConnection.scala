@@ -17,7 +17,6 @@ import scala.concurrent.duration._
 import StreamRepository._
 
 trait TwitterConnection {
-  implicit val formats = DefaultFormats
   implicit val system = ActorSystem("TweetSystem")
   val actor = system.actorOf(Props[StreamActor],name = "streamactor")
   val log = Logging(system,actor)

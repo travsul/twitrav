@@ -1,11 +1,17 @@
 package com.TwiTrav
 
 import twitter4j._
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
+import scala.io._
 
 object StreamRepository {
+  implicit val formats = DefaultFormats
+
   private[this] var tweetStream: List[Status] = List[Status]()
   private[this] val startTime = System.currentTimeMillis
   private[this] def getTimeSinceStart: Int = ((System.currentTimeMillis - startTime) / 1000).toInt
+  //private[this] val emoji = parse(Source.fromFile("emoji.json").getLines.mkString).extract[List[Emoji]]
 
   def getTweets: List[String] = tweetStream.map(_.getText)
 
@@ -20,7 +26,7 @@ object StreamRepository {
   def getSecondAvg: Int = divideByTime(tweetStream.length,getTimeSinceStart)
   def getMinutes: Double = (getTimeSinceStart / 60)
   def getMinuteAvg: Int = divideByTime(tweetStream.length,getMinutes.toInt)
-  def getHours: Double = (getTimeSinceStart / 360)
+  def getHours: Double = (getTimeSinceStart / 3600)
   def getHourAvg: Int = divideByTime(tweetStream.length,getHours.toInt)
   def getUrlAvg: Int = {
     (tweetStream.map(containsUrl).filter(s=>s).length.toDouble / getTweets.length.toDouble * 100).toInt
@@ -39,6 +45,10 @@ object StreamRepository {
   def getTopTenHashtags: List[String] = {
     runEncode(gatherHashtags).slice(0,10).map(s=>s"${s._1} @ ${s._2} uses")
   }
+
+  /*def hasEmoji: List[Boolean] = {
+    getTweets.map(_.split(" ").filter(s=>emojiUni.contains(s))).map(_.length>0)
+  }*/
 
   def getDisplayDomains = {
     for {

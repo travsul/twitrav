@@ -15,3 +15,25 @@ case class Secrets(consumerKey: String, consumerSecret: String, accessToken: Str
 }
 
 case class AddTweet(tweet: Status)
+
+case class Emoji(name: String,
+  unified: String,
+  variations: List[String],
+  docomo: String,
+  au: String,
+  softbank: String,
+  google: String,
+  image: String,
+  sheet_x: String,
+  sheet_y: String,
+  short_name: String,
+  short_names: List[String],
+  text: String,
+  texts: List[String],
+  category: String,
+  sort_order: String,
+  has_img_apple: Boolean,
+  has_img_google: Boolean,
+  has_img_twitter: Boolean,
+  has_img_emojione: Boolean
+)

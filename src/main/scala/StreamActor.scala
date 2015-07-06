@@ -10,10 +10,7 @@ import StreamRepository._
 
 class StreamActor extends Actor {
   def receive = {
-    case AddTweet(tweet) => {
-      addTweet(tweet)
-      //println(getTweets)
-    }
+    case AddTweet(tweet) => addTweet(tweet)
   }
 }
 
