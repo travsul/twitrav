@@ -78,6 +78,13 @@ trait StreamService extends HttpService {
       }
     }
   }~
+  path("emojiData") {
+    get {
+      complete {
+        s"${getEmojiAvg}% contains emojis\n\n" + getTopTenEmoji.mkString("\n")
+      }
+    }
+  }~
   path("timelyData") {
     get {
       complete {
