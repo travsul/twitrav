@@ -4,6 +4,8 @@ import twitter4j._
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import scala.io._
+import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object StreamRepository {
   implicit val formats = DefaultFormats
@@ -11,13 +13,15 @@ object StreamRepository {
   private[this] var tweetStream: List[Status] = List[Status]()
   private[this] val startTime: Long = System.currentTimeMillis
   private[this] def getTimeSinceStart: Int = ((System.currentTimeMillis - startTime) / 1000).toInt
-  private[this] val emoji = parse(Source.fromFile("emoji.json").getLines.mkString)
+  private[this] val emoji: Future[List[String]] = Future { parse(Source.fromFile("emoji.json").getLines.mkString)
                                                                .extract[List[Emoji]]
                                                                .map(e=>new String(e.unified.split("-").flatMap{ codepoint =>
                                                                  Character.toChars(Integer.parseInt(codepoint, 16))
-                                                                }))
+                                                                })) }
 
   def getTweets: List[String] = tweetStream.map(_.getText)
+
+  def getEmojiTweets: Future[List[String]] = Future(tweetStream.map(_.getText))
 
   def addTweet(tweet: Status): Unit = tweetStream = tweet :: tweetStream
 
@@ -49,9 +53,9 @@ object StreamRepository {
 
   def getTopTenHashtags: List[String] = getOccurrence(gatherHashtags).map(s=>s"${s._1} @ ${s._2} uses")
 
-  def getTopTenEmoji: List[String] = getOccurrence(getEmoji).map(s=>s"${s._1} @ ${s._2} uses")
+  def getTopTenEmoji: Future[List[String]] = getEmoji.map(e=>getOccurrence(e).map(s=>s"${s._1} @ ${s._2} uses"))
 
-  def getEmoji: List[String] = {
+  def getEmoji: Future[List[String]] = Future {
     for {
       tweet <- getTweets
       e <- emoji
@@ -60,7 +64,7 @@ object StreamRepository {
   }
 
   def containsEmoji(status: Status): Boolean = {
-    emoji.map(s=>status.getText.contains(s)).filter(s=>s).length > 0
+    emoji.map(s=>status.getText.contains(s)).filter(s=>s).contains(true)
   }
 
   def getDisplayDomains: List[String] = {

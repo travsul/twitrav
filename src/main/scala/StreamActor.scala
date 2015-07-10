@@ -7,6 +7,9 @@ import spray.routing._
 import spray.http._
 import MediaTypes._
 import StreamRepository._
+import scala.concurrent._
+import scala.util._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class StreamActor extends Actor {
   def receive = {
@@ -80,8 +83,9 @@ trait StreamService extends HttpService {
   }~
   path("emojiData") {
     get {
-      complete {
-        s"${getEmojiAvg}% contains emojis\n\n" + getTopTenEmoji.mkString("\n")
+      onComplete(getTopTenEmoji) {
+        case Success(e) => complete(s"${getEmojiAvg}% contains emojis\n\n" + e.mkString("\n"))
+        case Failure(t) => complete("Could not get response")
       }
     }
   }~
