@@ -11,16 +11,14 @@ import scala.concurrent._
 import scala.util._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class StreamActor extends Actor {
-  def receive = {
-    case AddTweet(tweet) => addTweet(tweet)
-  }
-}
-
-class RouteActor extends Actor with StreamService {
+class StreamActor extends Actor with StreamService {
   def actorRefFactory = context
 
-  def receive = runRoute(streamRoute)
+  def receive = {
+    case AddTweet(tweet) => addTweet(tweet)
+    case AddEmoji(tweet) => addEmoji(tweet)
+    case default => runRoute(streamRoute)
+  }
 }
 
 trait StreamService extends HttpService {
@@ -83,10 +81,7 @@ trait StreamService extends HttpService {
   }~
   path("emojiData") {
     get {
-      onComplete(getTopTenEmoji) {
-        case Success(e) => complete(s"${getEmojiAvg}% contains emojis\n\n" + e.mkString("\n"))
-        case Failure(t) => complete("Could not get response")
-      }
+      complete(s"${getEmojiAvg}% contains emojis\n\n" + getTopTenEmoji.mkString("\n"))
     }
   }~
   path("timelyData") {

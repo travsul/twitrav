@@ -13,15 +13,17 @@ object StreamRepository {
   private[this] var tweetStream: List[Status] = List[Status]()
   private[this] val startTime: Long = System.currentTimeMillis
   private[this] def getTimeSinceStart: Int = ((System.currentTimeMillis - startTime) / 1000).toInt
-  private[this] val emoji: Future[List[String]] = Future { parse(Source.fromFile("emoji.json").getLines.mkString)
+  private[this] lazy val emoji: List[String] = parse(Source.fromFile("emoji.json").getLines.mkString)
                                                                .extract[List[Emoji]]
                                                                .map(e=>new String(e.unified.split("-").flatMap{ codepoint =>
                                                                  Character.toChars(Integer.parseInt(codepoint, 16))
-                                                                })) }
+                                                                }))
+
+  private[this] var emojisInTweets: List[String] = List[String]()
 
   def getTweets: List[String] = tweetStream.map(_.getText)
 
-  def getEmojiTweets: Future[List[String]] = Future(tweetStream.map(_.getText))
+  def addEmoji(tweet: Status): Unit = emoji.foreach(s=> if(tweet.getText.contains(s)) emojisInTweets = s :: emojisInTweets)
 
   def addTweet(tweet: Status): Unit = tweetStream = tweet :: tweetStream
 
@@ -49,11 +51,11 @@ object StreamRepository {
     (tweetStream.filter(containsEmoji).length.toDouble / getTweets.length.toDouble * 100).toInt
   }
 
-  def getTopTenUrl: List[String] = getOccurrence(getDomains)map(s=>s"${s._1} @ ${s._2} uses")
+  def getTopTenUrl: List[String] = getOccurrence(getDomains).map(s=>s"${s._1} @ ${s._2} uses")
 
   def getTopTenHashtags: List[String] = getOccurrence(gatherHashtags).map(s=>s"${s._1} @ ${s._2} uses")
 
-  def getTopTenEmoji: Future[List[String]] = getEmoji.map(e=>getOccurrence(e).map(s=>s"${s._1} @ ${s._2} uses"))
+  def getTopTenEmoji: List[String] = getOccurrence(emojisInTweets).map(s=>s"${s._1} @ ${s._2} uses")
 
   def getEmoji: Future[List[String]] = Future {
     for {

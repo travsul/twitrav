@@ -15,6 +15,7 @@ case class Secrets(consumerKey: String, consumerSecret: String, accessToken: Str
 }
 
 case class AddTweet(tweet: Status)
+case class AddEmoji(tweet: Status)
 
 case class Emoji(name: String,
   unified: String,

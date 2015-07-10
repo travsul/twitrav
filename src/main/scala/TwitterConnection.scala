@@ -30,7 +30,10 @@ trait TwitterConnection {
   }
 
   def simpleStatusListener = new StatusListener() {
-    def onStatus(status: Status) = { actor ! AddTweet(status) }
+    def onStatus(status: Status) = {
+      actor ! AddTweet(status)
+      actor ! AddEmoji(status)
+    }
 
     def onDeletionNotice(statusDeletionNotice: StatusDeletionNotice) {}
 
@@ -63,7 +66,6 @@ object StatusStreamer extends App with TwitterConnection {
   maybeSecrets.foreach(secrets => getStream(secrets).sample)
 
   implicit val timeout = Timeout(5.seconds)
-  val routeActor = system.actorOf(Props[RouteActor],"stream-service")
 
-  IO(Http) ? Http.Bind(routeActor, interface = "localhost", port = 8080)
+  IO(Http) ? Http.Bind(actor, interface = "localhost", port = 8080)
 }
