@@ -6,7 +6,6 @@ import akka.actor.Props
 import spray.routing._
 import spray.http._
 import MediaTypes._
-import StreamRepository._
 import scala.concurrent._
 import scala.util._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -15,13 +14,19 @@ class StreamActor extends Actor with StreamService {
   def actorRefFactory = context
 
   def receive = {
-    case AddTweet(tweet) => addTweet(tweet)
-    case AddEmoji(tweet) => addEmoji(tweet)
-    case default => runRoute(streamRoute)
+    case AddTweet(tweet) => repository.addTweet(tweet)
   }
 }
 
-trait StreamService extends HttpService {
+class RouteActor extends Actor with StreamService {
+  def actorRefFactory = context
+
+  def receive = runRoute(streamRoute)
+}
+
+trait StreamService extends HttpService with TweetFunctions {
+  val repository = MemoryTweetRepository
+
   val streamRoute =
     path("") {
       get {
