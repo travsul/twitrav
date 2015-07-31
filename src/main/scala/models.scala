@@ -20,7 +20,7 @@ case class Secrets(
 }
 
 case class AddTweet(tweet: Status)
-case class AddEmoji(tweet: Status)
+case class DeleteTweet(notice: StatusDeletionNotice)
 
 case class Emoji(
   name: String,
@@ -46,6 +46,7 @@ case class Emoji(
 )
 
 case class Tweet(
+  id: Long,
   text: String,
   hasUrl: Boolean,
   hasEmoji: Boolean,

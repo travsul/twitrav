@@ -15,6 +15,7 @@ class StreamActor extends Actor with StreamService {
 
   def receive = {
     case AddTweet(tweet) => repository.addTweet(tweet)
+    case DeleteTweet(notice) => repository.deleteTweet(notice)
   }
 }
 
@@ -72,21 +73,33 @@ trait StreamService extends HttpService with TweetFunctions {
   }~
   path("urlData") {
     get {
-      complete {
-        s"${getUrlAvg}% contain urls\n${getPicAvg}% contains pictures\n\n" + getTopTenUrl.mkString("\n")
+      onComplete(getTopTenUrl) {
+        case Success(urls) =>
+          complete {
+            s"${getUrlAvg}% contain urls\n${getPicAvg}% contains pictures\n\n" + urls.mkString("\n")
+          }
+        case Failure(ex) => complete("Error getting page")
       }
     }
   }~
   path("hashtagData") {
     get {
-      complete {
-        s"${getHashAvg}% contains hashtags\n\n" + getTopTenHashtags.mkString("\n")
+      onComplete(getTopTenHashtags) {
+        case Success(hashtags) =>
+          complete {
+            s"${getHashAvg}% contains hashtags\n\n" + hashtags.mkString("\n")
+          }
+        case Failure(ex) => complete("Error getting page")
       }
     }
   }~
   path("emojiData") {
     get {
-      complete(s"${getEmojiAvg}% contains emojis\n\n" + getTopTenEmoji.mkString("\n"))
+      onComplete(getTopTenEmoji) {
+        case Success(emojis) =>
+          complete(s"${getEmojiAvg}% contains emojis\n\n" + emojis.mkString("\n"))
+        case Failure(ex) => complete("Error getting page")
+      }
     }
   }~
   path("timelyData") {

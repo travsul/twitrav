@@ -35,7 +35,9 @@ trait TwitterConnection extends TweetFunctions {
       actor ! AddTweet(status)
     }
 
-    def onDeletionNotice(statusDeletionNotice: StatusDeletionNotice) {}
+    def onDeletionNotice(statusDeletionNotice: StatusDeletionNotice) {
+      actor ! DeleteTweet(statusDeletionNotice)
+    }
 
     def onTrackLimitationNotice(numberOfLimitedStatuses: Int) {}
 
