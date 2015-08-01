@@ -37,13 +37,15 @@ object MemoryTweetRepository extends TweetRepository {
     val hasEmoji = containsEmoji(tweet)
     val urls = tweet.getURLEntities.map(_.getExpandedURL.mkString).toList
     val hashtags = tweet.getHashtagEntities.map(_.getText.mkString).toList
-    val emojis = tweet.getText.toList.map(_.toString).filter(isEmoji)
+    val emojis = emojisContained(tweet.getText)
     val newTweet = Tweet(id,tweet.getText,hasUrl,hasEmoji,hasHashtag,urls,emojis,hashtags)
     tweetStream = newTweet :: tweetStream
     newTweet
   }
 
-  def isEmoji(e: String): Boolean = emoji.contains(e)
+  private[this] def emojisContained(text: String): List[String] = {
+    emoji.filter(e=>text.contains(e))
+  }
 
   def deleteTweet(notice: StatusDeletionNotice): Future[Option[Tweet]] = Future {
     val maybeTweet = tweetStream.find(_.id == notice.getStatusId)
@@ -57,7 +59,7 @@ object MemoryTweetRepository extends TweetRepository {
 
   def getUrls: Future[List[String]] = Future(getTweets.flatMap(_.urls))
 
-  def containsEmoji(status: Status): Boolean = {
+  private[this] def containsEmoji(status: Status): Boolean = {
     emoji.foreach(s=>if (status.getText.contains(s)) return true)
     return false
   }
@@ -69,21 +71,21 @@ object MemoryTweetRepository extends TweetRepository {
     } yield (url.split("/")(2))
   }
 
-  def containsUrl(status: Status): Boolean = {
+  private[this] def containsUrl(status: Status): Boolean = {
     status.getURLEntities
       .map(_.getExpandedURL.mkString)
       .filter(_.length > 0)
       .length > 0
   }
 
-  def containsHashtag(status: Status): Boolean = {
+  private[this] def containsHashtag(status: Status): Boolean = {
     status.getHashtagEntities
       .map(_.getText)
       .filter(_.length > 0)
       .length > 0
   }
 
-  def containsPicture(status: Status): Boolean = {
+  private[this] def containsPicture(status: Status): Boolean = {
     status.getURLEntities
       .map(_.getExpandedURL.mkString)
       .filter(s=>s.contains("instagram") || s.contains("pic.twiiter.com"))
@@ -129,7 +131,7 @@ trait TweetFunctions {
 
   def getTopTenEmoji: Future[List[String]] = repository.getEmojis.map(emojis=>getOccurrence(emojis).map(s=>s"${s._1} @ ${s._2} uses"))
 
-  
+
   def getOccurrence(ls: List[String]): List[(String,Int)] = {
     ls.groupBy(identity).mapValues(_.size).toList.sortBy(_._2).reverse.slice(0,10)
   }
