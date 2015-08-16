@@ -26,7 +26,7 @@ class RouteActor extends Actor with StreamService {
 }
 
 trait StreamService extends HttpService with TweetFunctions {
-  val repository = MemoryTweetRepository
+  val repository = RepositoryConnection.repository
 
   val streamRoute =
     path("") {
@@ -60,14 +60,14 @@ trait StreamService extends HttpService with TweetFunctions {
   path("secondData") {
     get {
       complete {
-        s"${getSecondAvg} over ${getSeconds}"
+        s"${getSecondAvg} over ${getSeconds} seconds"
       }
     }
   }~
   path("minuteData") {
     get {
       complete {
-        s"${getMinuteAvg} over ${getMinutes}"
+        s"${getMinuteAvg} over ${getMinutes} minutes"
       }
     }
   }~

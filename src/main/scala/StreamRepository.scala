@@ -9,14 +9,15 @@ import ExecutionContext.Implicits.global
 
 trait TweetRepository {
   def getTweets: List[Tweet]
-  def addTweet(tweet: Status): Future[Tweet]
-  def deleteTweet(notice: StatusDeletionNotice): Future[Option[Tweet]]
+  def addTweet(tweet: Tweet): Future[Tweet]
+  def deleteTweet(id: Long): Future[Option[Tweet]]
   def getEmojis: Future[List[String]]
   def getDomains: Future[List[String]]
   def getHashtags: Future[List[String]]
+  def tweetFromStatus(tweet: Status): Tweet
 }
 
-object MemoryTweetRepository extends TweetRepository {
+class MemoryTweetRepository extends TweetRepository {
   implicit val formats = DefaultFormats
 
   private[this] var tweetStream: List[Tweet] = List[Tweet]()
@@ -30,7 +31,7 @@ object MemoryTweetRepository extends TweetRepository {
 
   def getTweets: List[Tweet] = tweetStream
 
-  def addTweet(tweet: Status): Future[Tweet] = Future {
+  def tweetFromStatus(tweet: Status): Tweet = {
     val id = tweet.getId
     val hasUrl = containsUrl(tweet)
     val hasHashtag = containsHashtag(tweet)
@@ -38,18 +39,21 @@ object MemoryTweetRepository extends TweetRepository {
     val urls = tweet.getURLEntities.map(_.getExpandedURL.mkString).toList
     val hashtags = tweet.getHashtagEntities.map(_.getText.mkString).toList
     val emojis = emojisContained(tweet.getText)
-    val newTweet = Tweet(id,tweet.getText,hasUrl,hasEmoji,hasHashtag,urls,emojis,hashtags)
-    tweetStream = newTweet :: tweetStream
-    newTweet
+    Tweet(id,tweet.getText,hasUrl,hasEmoji,hasHashtag,urls,emojis,hashtags)
+  }
+
+  def addTweet(tweet: Tweet): Future[Tweet] = Future {
+    tweetStream = tweet :: tweetStream
+    tweet
   }
 
   private[this] def emojisContained(text: String): List[String] = {
     emoji.filter(e=>text.contains(e))
   }
 
-  def deleteTweet(notice: StatusDeletionNotice): Future[Option[Tweet]] = Future {
-    val maybeTweet = tweetStream.find(_.id == notice.getStatusId)
-    tweetStream = tweetStream.filterNot(_.id == notice.getStatusId)
+  def deleteTweet(id: Long): Future[Option[Tweet]] = Future {
+    val maybeTweet = tweetStream.find(_.id == id)
+    tweetStream = tweetStream.filterNot(_.id == id)
     maybeTweet
   }
 
@@ -132,7 +136,7 @@ trait TweetFunctions {
   def getTopTenEmoji: Future[List[String]] = repository.getEmojis.map(emojis=>getOccurrence(emojis).map(s=>s"${s._1} @ ${s._2} uses"))
 
 
-  def getOccurrence(ls: List[String]): List[(String,Int)] = {
+  private[this] def getOccurrence(ls: List[String]): List[(String,Int)] = {
     ls.groupBy(identity).mapValues(_.size).toList.sortBy(_._2).reverse.slice(0,10)
   }
 }

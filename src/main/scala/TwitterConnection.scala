@@ -16,9 +16,10 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 
 trait TwitterConnection extends TweetFunctions {
-  val repository = MemoryTweetRepository
+  val repository = RepositoryConnection.repository
   
   implicit val system = ActorSystem("TweetSystem")
+
   val actor = system.actorOf(Props[StreamActor],name = "streamactor")
   val log = Logging(system,actor)
 
@@ -32,11 +33,11 @@ trait TwitterConnection extends TweetFunctions {
 
   def simpleStatusListener = new StatusListener() {
     def onStatus(status: Status) = {
-      actor ! AddTweet(status)
+      actor ! AddTweet(repository.tweetFromStatus(status))
     }
 
     def onDeletionNotice(statusDeletionNotice: StatusDeletionNotice) {
-      actor ! DeleteTweet(statusDeletionNotice)
+      actor ! DeleteTweet(statusDeletionNotice.getStatusId)
     }
 
     def onTrackLimitationNotice(numberOfLimitedStatuses: Int) {}
@@ -73,3 +74,4 @@ object StatusStreamer extends App with TwitterConnection {
 
   IO(Http) ? Http.Bind(routeActor, interface = "localhost", port = 8080)
 }
+
