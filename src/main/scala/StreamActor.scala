@@ -105,7 +105,7 @@ trait StreamService extends HttpService with TweetFunctions {
   path("timelyData") {
     get {
       complete {
-        s"${getHourAvg} over ${getHours} hours\n${getMinuteAvg} over ${getMinutes}\n${getSecondAvg} over ${getSeconds}"
+        s"${getHourAvg} over ${getHours} hours\n${getMinuteAvg} over ${getMinutes} minutes\n${getSecondAvg} over ${getSeconds} seconds"
       }
     }
   }
