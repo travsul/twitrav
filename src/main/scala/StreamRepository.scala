@@ -129,14 +129,14 @@ trait TweetFunctions {
     (repository.getTweets.filter(_.hasEmoji).length.toDouble / repository.getTweets.length.toDouble * 100).toInt
   }
 
-  def getTopTenUrl: Future[List[String]] = repository.getDomains.map(domains=>getOccurrence(domains).map(s=>s"${s._1} @ ${s._2} uses"))
+  def getTopUrl(n: Int): Future[List[String]] = repository.getDomains.map(domains=>getOccurrence(domains,n).map(s=>s"${s._1} @ ${s._2} uses"))
 
-  def getTopTenHashtags: Future[List[String]] = repository.getHashtags.map(hashtags => getOccurrence(hashtags).map(s=>s"${s._1} @ ${s._2} uses"))
+  def getTopHashtags(n: Int): Future[List[String]] = repository.getHashtags.map(hashtags => getOccurrence(hashtags,n).map(s=>s"${s._1} @ ${s._2} uses"))
 
-  def getTopTenEmoji: Future[List[String]] = repository.getEmojis.map(emojis=>getOccurrence(emojis).map(s=>s"${s._1} @ ${s._2} uses"))
+  def getTopEmoji(n: Int): Future[List[String]] = repository.getEmojis.map(emojis=>getOccurrence(emojis,n).map(s=>s"${s._1} @ ${s._2} uses"))
 
 
-  private[this] def getOccurrence(ls: List[String]): List[(String,Int)] = {
-    ls.groupBy(identity).mapValues(_.size).toList.sortBy(_._2).reverse.slice(0,10)
+  private[this] def getOccurrence(ls: List[String], top: Int): List[(String,Int)] = {
+    ls.groupBy(identity).mapValues(_.size).toList.sortBy(_._2).reverse.slice(0,top)
   }
 }

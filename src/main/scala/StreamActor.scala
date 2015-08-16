@@ -40,9 +40,9 @@ trait StreamService extends HttpService with TweetFunctions {
             <li><a href="/hourData">Hourly data</a></li>
             <li><a href="/secondData">Secondly data</a></li>
             <li><a href="/minuteData">Minutely data</a></li>
-            <li><a href="/emojiData">Emoji data</a></li>
-            <li><a href="/urlData">URL data</a></li>
-            <li><a href="/hashtagData">Hashtag data</a></li>
+            <li><a href="/emojiData?q=10">Emoji data</a></li>
+            <li><a href="/urlData?q=10">URL data</a></li>
+            <li><a href="/hashtagData?q=10">Hashtag data</a></li>
             </ul>
             </body>
             </html>
@@ -73,32 +73,38 @@ trait StreamService extends HttpService with TweetFunctions {
   }~
   path("urlData") {
     get {
-      onComplete(getTopTenUrl) {
-        case Success(urls) =>
-          complete {
-            s"${getUrlAvg}% contain urls\n${getPicAvg}% contains pictures\n\n" + urls.mkString("\n")
-          }
-        case Failure(ex) => complete("Error getting page")
+      parameters('q.as[Int]) { q =>
+        onComplete(getTopUrl(q)) {
+          case Success(urls) =>
+            complete {
+              s"${getUrlAvg}% contain urls\n${getPicAvg}% contains pictures\n\n" + urls.mkString("\n")
+            }
+          case Failure(ex) => complete("Error getting page")
+        }
       }
     }
   }~
   path("hashtagData") {
     get {
-      onComplete(getTopTenHashtags) {
-        case Success(hashtags) =>
-          complete {
-            s"${getHashAvg}% contains hashtags\n\n" + hashtags.mkString("\n")
-          }
-        case Failure(ex) => complete("Error getting page")
+      parameters('q.as[Int]) { q =>
+        onComplete(getTopHashtags(q)) {
+          case Success(hashtags) =>
+            complete {
+              s"${getHashAvg}% contains hashtags\n\n" + hashtags.mkString("\n")
+            }
+          case Failure(ex) => complete("Error getting page")
+        }
       }
     }
   }~
   path("emojiData") {
     get {
-      onComplete(getTopTenEmoji) {
-        case Success(emojis) =>
-          complete(s"${getEmojiAvg}% contains emojis\n\n" + emojis.mkString("\n"))
-        case Failure(ex) => complete("Error getting page")
+      parameters('q.as[Int]) { q =>
+        onComplete(getTopEmoji(q)) {
+          case Success(emojis) =>
+            complete(s"${getEmojiAvg}% contains emojis\n\n" + emojis.mkString("\n"))
+          case Failure(ex) => complete("Error getting page")
+        }
       }
     }
   }~
