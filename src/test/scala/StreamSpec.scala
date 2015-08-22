@@ -40,18 +40,18 @@ object StreamSpec extends Specification with Specs2RouteTest with StreamService 
       }
     }
     "Hashtage data contains correct layout" in {
-      Get("/hashtagData") ~> streamRoute ~> check {
+      Get("/hashtagData?q=10") ~> streamRoute ~> check {
         responseAs[String] must contain("contains hashtags")
       }
     }
     "Url data contains correct layout" in {
-      Get("/urlData") ~> streamRoute ~> check {
+      Get("/urlData?q=10") ~> streamRoute ~> check {
         responseAs[String] must contain("contain urls")
         responseAs[String] must contain("contains pictures")
       }
     }
     "Emoji data contains correct layout" in {
-      Get("/emojiData") ~> streamRoute ~> check {
+      Get("/emojiData?q=10") ~> streamRoute ~> check {
         responseAs[String] must contain("contains emojis")
       }
     }
