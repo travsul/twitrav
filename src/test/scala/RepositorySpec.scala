@@ -1,13 +1,12 @@
 package com.TwiTrav
 
 import org.specs2._
-import scala.concurrent._
 
 object RepositorySpec extends mutable.Specification with TweetFunctions {
   val repository = RepositoryConnection.repository
   sequential
 
-  lazy val newTweet = Tweet(1234,"",true,true,true,List("www.fun.com"),List(":)"),List("#fun"))
+  lazy val newTweet = Tweet(1234,"",hasUrl = true,hasEmoji = true,hasHashtag = true,List("www.fun.com"),List(":)"),List("#fun"))
   lazy val adding   = repository.addTweet(newTweet)
   lazy val deleting = repository.deleteTweet(1234)
 

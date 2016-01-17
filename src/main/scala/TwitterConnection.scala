@@ -1,23 +1,22 @@
 package com.TwiTrav
 
-import twitter4j._
-import twitter4j.conf._
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
-import akka.actor.ActorSystem
-import akka.actor.Props
-import akka.actor.Actor
-import scala.io._
+import akka.actor.{ActorSystem, Props}
 import akka.event.Logging
 import akka.io.IO
-import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
+import spray.can.Http
+import twitter4j._
+import twitter4j.conf._
+
 import scala.concurrent.duration._
+import scala.io._
 
 trait TwitterConnection extends TweetFunctions {
   val repository = RepositoryConnection.repository
-  
+
   implicit val system = ActorSystem("TweetSystem")
 
   val actor = system.actorOf(Props[StreamActor],name = "streamactor")
@@ -42,7 +41,7 @@ trait TwitterConnection extends TweetFunctions {
 
     def onTrackLimitationNotice(numberOfLimitedStatuses: Int) {}
 
-    def onException(ex: Exception) = ex.printStackTrace
+    def onException(ex: Exception) = ex.printStackTrace()
 
     def onScrubGeo(arg0: Long, arg1: Long) {}
 
@@ -60,18 +59,17 @@ trait TwitterConnection extends TweetFunctions {
   }
 
   def closeStream(stream: TwitterStream) = {
-    stream.cleanUp
-    stream.shutdown
+    stream.cleanUp()
+    stream.shutdown()
   }
 }
 object StatusStreamer extends App with TwitterConnection {
   private[this] val maybeSecrets = extractSecrets(Option("secrets.json"))
-  maybeSecrets.foreach(secrets => getStream(secrets).sample)
+  maybeSecrets.foreach(secrets => getStream(secrets).sample())
 
   implicit val timeout = Timeout(5.seconds)
 
   val routeActor = system.actorOf(Props[RouteActor],"stream-service")
 
-  IO(Http) ? Http.Bind(routeActor, interface = "localhost", port = 8080)
+  IO(Http) ? Http.Bind(routeActor, interface = "localhost", port = 80)
 }
-

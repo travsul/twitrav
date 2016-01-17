@@ -11,13 +11,12 @@ class MemoryTweetRepository extends TweetRepository {
   implicit val formats = DefaultFormats
 
   private[this] var tweetStream: List[Tweet] = List[Tweet]()
-  private[this] val emoji: List[String] = parse(Source.fromFile("emoji.json").getLines.mkString)
-                                                               .extract[List[Emoji]]
-                                                               .map(e=>new String(e.unified.split("-").flatMap{ codepoint =>
-                                                                 Character.toChars(Integer.parseInt(codepoint, 16))
-                                                                }))
-
-  private[this] var emojisInTweets: List[String] = List[String]()
+  private[this] val emoji: List[String] =
+    parse(Source.fromFile("emoji.json").getLines.mkString)
+      .extract[List[Emoji]]
+      .map(e=>new String(e.unified.split("-").flatMap{ codepoint =>
+        Character.toChars(Integer.parseInt(codepoint, 16))
+      }))
 
   def getTweets: List[Tweet] = tweetStream
 
@@ -55,34 +54,26 @@ class MemoryTweetRepository extends TweetRepository {
 
   private[this] def containsEmoji(status: Status): Boolean = {
     emoji.foreach(s=>if (status.getText.contains(s)) return true)
-    return false
+    false
   }
 
   def getDomains = Future {
     for {
       tweet <- getTweets
       url <- tweet.urls
-    } yield (url.split("/")(2))
+    } yield url.split("/")(2)
   }
 
-  private[this] def containsUrl(status: Status): Boolean = {
-    status.getURLEntities
-      .map(_.getExpandedURL.mkString)
-      .filter(_.length > 0)
-      .length > 0
-  }
+  private[this] def containsUrl(status: Status): Boolean = status.getURLEntities
+    .map(_.getExpandedURL.mkString).exists(_.nonEmpty)
 
   private[this] def containsHashtag(status: Status): Boolean = {
     status.getHashtagEntities
-      .map(_.getText)
-      .filter(_.length > 0)
-      .length > 0
+      .map(_.getText).exists(_.nonEmpty)
   }
 
   private[this] def containsPicture(status: Status): Boolean = {
     status.getURLEntities
-      .map(_.getExpandedURL.mkString)
-      .filter(s=>s.contains("instagram") || s.contains("pic.twiiter.com"))
-      .length > 0
+      .map(_.getExpandedURL.mkString).exists(s => s.contains("instagram") || s.contains("pic.twitter.com"))
   }
 }
