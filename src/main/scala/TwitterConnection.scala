@@ -71,5 +71,5 @@ object StatusStreamer extends App with TwitterConnection {
 
   val routeActor = system.actorOf(Props[RouteActor],"stream-service")
 
-  IO(Http) ? Http.Bind(routeActor, interface = "localhost", port = 80)
+  IO(Http) ? Http.Bind(routeActor, interface = "localhost", port = 8080)
 }
