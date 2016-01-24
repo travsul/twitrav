@@ -52,3 +52,21 @@ case class Tweet(
   emojis: List[String],
   hashtags: List[String]
 )
+
+case class Averages(
+  url: Int,
+  hashtag: Int,
+  picture: Int,
+  emoji: Int
+)
+
+case class TopList(
+  url: List[Occurrence],
+  hashtag: List[Occurrence],
+  emoji: List[Occurrence]
+)
+
+case class Occurrence(
+  item: String,
+  uses: Int
+)
