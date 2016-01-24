@@ -19,16 +19,15 @@ trait TwitterConnection extends TweetFunctions {
 
   implicit val system = ActorSystem("TweetSystem")
 
-  val actor = system.actorOf(Props[StreamActor],name = "streamactor")
-  val log = Logging(system,actor)
+  val actor = system.actorOf(Props[StreamActor], name = "streamactor")
+  val log = Logging(system, actor)
 
-  def getConfig(secrets: Secrets): Configuration = {
+  def getConfig(secrets: Secrets): Configuration =
     new ConfigurationBuilder().setOAuthConsumerKey(secrets.consumerKey)
                               .setOAuthConsumerSecret(secrets.consumerSecret)
                               .setOAuthAccessToken(secrets.accessToken)
                               .setOAuthAccessTokenSecret(secrets.accessTokenSecret)
                               .build()
-  }
 
   def simpleStatusListener = new StatusListener() {
     def onStatus(status: Status) = {
@@ -69,7 +68,7 @@ object StatusStreamer extends App with TwitterConnection {
 
   implicit val timeout = Timeout(5.seconds)
 
-  val routeActor = system.actorOf(Props[RouteActor],"stream-service")
+  val routeActor = system.actorOf(Props[RouteActor], "stream-service")
 
   IO(Http) ? Http.Bind(routeActor, interface = "localhost", port = 8080)
 }

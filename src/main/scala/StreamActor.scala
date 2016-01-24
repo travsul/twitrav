@@ -31,18 +31,18 @@ trait StreamService extends HttpService with TweetFunctions {
         respondWithMediaType(`text/html`) {
           complete {
             <html>
-            <body>
-            <ul>
-            <li><a href="/totaltweets">Total tweets</a></li>
-            <li><a href="/timelyData">Time data</a></li>
-            <li><a href="/hourData">Hourly data</a></li>
-            <li><a href="/secondData">Secondly data</a></li>
-            <li><a href="/minuteData">Minutely data</a></li>
-            <li><a href="/emojiData?q=10">Emoji data</a></li>
-            <li><a href="/urlData?q=10">URL data</a></li>
-            <li><a href="/hashtagData?q=10">Hashtag data</a></li>
-            </ul>
-            </body>
+              <body>
+                <ul>
+                  <li><a href="/totaltweets">Total tweets</a></li>
+                  <li><a href="/timelyData">Time data</a></li>
+                  <li><a href="/hourData">Hourly data</a></li>
+                  <li><a href="/secondData">Secondly data</a></li>
+                  <li><a href="/minuteData">Minutely data</a></li>
+                  <li><a href="/emojiData?q=10">Emoji data</a></li>
+                  <li><a href="/urlData?q=10">URL data</a></li>
+                  <li><a href="/hashtagData?q=10">Hashtag data</a></li>
+                </ul>
+              </body>
             </html>
           }
         }
