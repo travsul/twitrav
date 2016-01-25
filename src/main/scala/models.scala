@@ -58,15 +58,30 @@ case class Averages(
   hashtag: Int,
   picture: Int,
   emoji: Int
-)
+) {
+  def toJson: String = {
+    s"""{"url":$url,"hashtag":$hashtag,"picture":$picture,"emoji":$emoji}"""
+  }
+}
 
 case class TopList(
   url: List[Occurrence],
   hashtag: List[Occurrence],
   emoji: List[Occurrence]
-)
+) {
+  def toJson: String = {
+    val urlJson = s"""[${url.map(_.toJson).mkString(",")}]"""
+    val hashtagJson = s"""[${hashtag.map(_.toJson).mkString(",")}]"""
+    val emojiJson = s"""[${emoji.map(_.toJson).mkString(",")}]"""
+    s"""{"url":$urlJson,"hashtag":$hashtagJson,"emoji":$emojiJson}"""
+  }
+}
 
 case class Occurrence(
   item: String,
   uses: Int
-)
+) {
+  def toJson: String = {
+    s"""{"item":$item,"uses":$uses}"""
+  }
+}

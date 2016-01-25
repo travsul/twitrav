@@ -81,10 +81,9 @@ trait StreamService extends HttpService with TweetFunctions {
       parameters('q.as[Int]) { q =>
         onComplete(getTopUrl(q)) {
           case Success(urls) =>
-            complete {
-              s"$getUrlAvg% contain urls\n$getPicAvg% contains pictures\n\n" + urls.mkString("\n")
-            }
-          case Failure(ex) => complete("Error getting page")
+            complete(s"$getUrlAvg% contain urls\n$getPicAvg% contains pictures\n\n" + urls.mkString("\n"))
+          case Failure(ex) =>
+            complete("Error getting page")
         }
       }
     }
@@ -94,10 +93,9 @@ trait StreamService extends HttpService with TweetFunctions {
       parameters('q.as[Int]) { q =>
         onComplete(getTopHashtags(q)) {
           case Success(hashtags) =>
-            complete {
-              s"$getHashAvg% contains hashtags\n\n" + hashtags.mkString("\n")
-            }
-          case Failure(ex) => complete("Error getting page")
+            complete(s"$getHashAvg% contains hashtags\n\n" + hashtags.mkString("\n"))
+          case Failure(ex) =>
+            complete("Error getting page")
         }
       }
     }
@@ -108,7 +106,8 @@ trait StreamService extends HttpService with TweetFunctions {
         onComplete(getTopEmoji(q)) {
           case Success(emojis) =>
             complete(s"$getEmojiAvg% contains emojis\n\n" + emojis.mkString("\n"))
-          case Failure(ex) => complete("Error getting page")
+          case Failure(ex) =>
+            complete("Error getting page")
         }
       }
     }
@@ -117,6 +116,27 @@ trait StreamService extends HttpService with TweetFunctions {
     get {
       complete {
         s"$getHourAvg over $getHours hours\n$getMinuteAvg over $getMinutes minutes\n$getSecondAvg over $getSeconds seconds"
+      }
+    }
+  }~
+  path("averages") {
+    get {
+      respondWithMediaType(`application/json`)
+      complete {
+        getAverages.toJson
+      }
+    }
+  }~
+  path("toplist") {
+    get {
+      parameters('q.as[Int]) { q =>
+        respondWithMediaType(`application/json`)
+        onComplete(getTopLists(q)) {
+          case Success(topList) =>
+            complete(topList.toJson)
+          case Failure(ex) =>
+            complete("""{"error":"could not complete"}""")
+        }
       }
     }
   }
