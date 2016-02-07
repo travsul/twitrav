@@ -85,3 +85,13 @@ case class Occurrence(
     s"""{"item":$item,"uses":$uses}"""
   }
 }
+
+case class Overtime(
+  seconds: Int,
+  minutes: Int,
+  hours: Int
+) {
+  def toJson: String = {
+    s"""{"seconds":$seconds,"minutes":$minutes,"hours":$hours}"""
+  }
+}

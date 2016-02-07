@@ -26,118 +26,31 @@ trait StreamService extends HttpService with TweetFunctions {
   val repository = RepositoryConnection.repository
 
   val streamRoute =
-    path("") {
+    path("averages") {
       get {
-        respondWithMediaType(`text/html`) {
-          complete {
-            <html>
-              <body>
-                <ul>
-                  <li><a href="/totaltweets">Total tweets</a></li>
-                  <li><a href="/timelyData">Time data</a></li>
-                  <li><a href="/hourData">Hourly data</a></li>
-                  <li><a href="/secondData">Secondly data</a></li>
-                  <li><a href="/minuteData">Minutely data</a></li>
-                  <li><a href="/emojiData?q=10">Emoji data</a></li>
-                  <li><a href="/urlData?q=10">URL data</a></li>
-                  <li><a href="/hashtagData?q=10">Hashtag data</a></li>
-                </ul>
-              </body>
-            </html>
-          }
+        respondWithMediaType(`application/json`)
+        complete {
+          getAverages.toJson
         }
       }
     }~
-  path("totaltweets") {
-    get {
-      complete {
-        s"${repository.getTweets.length} total tweets received."
-      }
-    }
-  }~
-  path("hourData") {
-    get {
-      complete {
-        s"$getHourAvg over $getHours hours"
-      }
-    }
-  }~
-  path("secondData") {
-    get {
-      complete {
-        s"$getSecondAvg over $getSeconds seconds"
-      }
-    }
-  }~
-  path("minuteData") {
-    get {
-      complete {
-        s"$getMinuteAvg over $getMinutes minutes"
-      }
-    }
-  }~
-  path("urlData") {
-    get {
-      parameters('q.as[Int]) { q =>
-        onComplete(getTopUrl(q)) {
-          case Success(urls) =>
-            complete(s"$getUrlAvg% contain urls\n$getPicAvg% contains pictures\n\n" + urls.mkString("\n"))
-          case Failure(ex) =>
-            complete("Error getting page")
-        }
-      }
-    }
-  }~
-  path("hashtagData") {
-    get {
-      parameters('q.as[Int]) { q =>
-        onComplete(getTopHashtags(q)) {
-          case Success(hashtags) =>
-            complete(s"$getHashAvg% contains hashtags\n\n" + hashtags.mkString("\n"))
-          case Failure(ex) =>
-            complete("Error getting page")
-        }
-      }
-    }
-  }~
-  path("emojiData") {
-    get {
-      parameters('q.as[Int]) { q =>
-        onComplete(getTopEmoji(q)) {
-          case Success(emojis) =>
-            complete(s"$getEmojiAvg% contains emojis\n\n" + emojis.mkString("\n"))
-          case Failure(ex) =>
-            complete("Error getting page")
-        }
-      }
-    }
-  }~
-  path("timelyData") {
-    get {
-      complete {
-        s"$getHourAvg over $getHours hours\n$getMinuteAvg over $getMinutes minutes\n$getSecondAvg over $getSeconds seconds"
-      }
-    }
-  }~
-  path("averages") {
-    get {
-      respondWithMediaType(`application/json`)
-      complete {
-        getAverages.toJson
-      }
-    }
-  }~
-  path("toplist") {
-    get {
-      parameters('q.as[Int]) { q =>
+    path("overtime") {
+      get {
         respondWithMediaType(`application/json`)
-        onComplete(getTopLists(q)) {
-          case Success(topList) =>
-            complete(topList.toJson)
-          case Failure(ex) =>
-            complete("""{"error":"could not complete"}""")
+        complete(getOvertime.toJson)
+      }
+    }~
+    path("toplist") {
+      get {
+        parameters('q.as[Int]) { q =>
+          respondWithMediaType(`application/json`)
+          onComplete(getTopLists(q)) {
+            case Success(topList) =>
+              complete(topList.toJson)
+            case Failure(ex) =>
+              complete("""{"error":"could not complete"}""")
+          }
         }
       }
     }
-  }
 }

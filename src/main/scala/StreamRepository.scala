@@ -90,6 +90,14 @@ trait TweetFunctions {
               }
   }
 
+  def getOvertime: Overtime = {
+    Overtime(
+      seconds = getSecondAvg,
+      minutes = getMinuteAvg,
+      hours = getHourAvg
+    )
+  }
+
   def getAverages: Averages = {
     Averages(
       url = getUrlAvg,
@@ -99,16 +107,16 @@ trait TweetFunctions {
   }
 
   def getTopLists(n: Int = 10): Future[TopList] = {
-      for {
-        url <- getTopUrl(n);
-        hash <- getTopHashtags(n);
-        emoji <- getTopEmoji(n)
-      } yield {
-        TopList(
-          url = url,
-          hashtag = hash,
-          emoji = emoji)
-      }
+    for {
+      url <- getTopUrl(n);
+      hash <- getTopHashtags(n);
+      emoji <- getTopEmoji(n)
+    } yield {
+      TopList(
+        url = url,
+        hashtag = hash,
+        emoji = emoji)
+    }
   }
 
   private[this] def getOccurrence(ls: List[String], top: Int): List[Occurrence] = {
