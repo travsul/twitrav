@@ -1,6 +1,9 @@
 package com.TwiTrav
 
-import org.json4s.JsonDSL._
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
+import JsonDSL._
+import JsonAST.JObject
 
 case class Secrets(
   consumerKey: String,
@@ -8,7 +11,7 @@ case class Secrets(
   accessToken: String,
   accessTokenSecret: String
 ) {
-  def toJson = {
+  def toJson: JObject = {
     ("consumerKey" -> consumerKey)~
     ("consumerSecret" -> consumerSecret)~
     ("accessToken" -> accessToken)~
@@ -59,8 +62,11 @@ case class Averages(
   picture: Int,
   emoji: Int
 ) {
-  def toJson: String = {
-    s"""{"url":$url,"hashtag":$hashtag,"picture":$picture,"emoji":$emoji}"""
+  def toJson: JObject = {
+    ("url" -> url)~
+    ("hashtag" -> hashtag)~
+    ("picture" -> picture)~
+    ("emoji" -> emoji)
   }
 }
 
@@ -69,11 +75,14 @@ case class TopList(
   hashtag: List[Occurrence],
   emoji: List[Occurrence]
 ) {
-  def toJson: String = {
-    val urlJson = s"""[${url.map(_.toJson).mkString(",")}]"""
-    val hashtagJson = s"""[${hashtag.map(_.toJson).mkString(",")}]"""
-    val emojiJson = s"""[${emoji.map(_.toJson).mkString(",")}]"""
-    s"""{"url":$urlJson,"hashtag":$hashtagJson,"emoji":$emojiJson}"""
+  def toJson: JObject = {
+    val urlJson = s"""[${url.map(s=>compact(render(s.toJson))).mkString(",")}]"""
+    val hashtagJson = s"""[${hashtag.map(s=>compact(render(s.toJson))).mkString(",")}]"""
+    val emojiJson = s"""[${emoji.map(s=>compact(render(s.toJson))).mkString(",")}]"""
+
+    ("url" -> urlJson)~
+    ("hashtag" -> hashtagJson)~
+    ("emoji" -> emojiJson)
   }
 }
 
@@ -81,8 +90,9 @@ case class Occurrence(
   item: String,
   uses: Int
 ) {
-  def toJson: String = {
-    s"""{"item":$item,"uses":$uses}"""
+  def toJson: JObject = {
+    ("item" -> item)~
+    ("uses" -> uses)
   }
 }
 
@@ -91,7 +101,9 @@ case class Overtime(
   minutes: Int,
   hours: Int
 ) {
-  def toJson: String = {
-    s"""{"seconds":$seconds,"minutes":$minutes,"hours":$hours}"""
+  def toJson: JObject = {
+    ("seconds" -> seconds)~
+    ("minutes" -> minutes)~
+    ("hours" -> hours)
   }
 }

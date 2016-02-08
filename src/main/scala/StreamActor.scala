@@ -7,6 +7,9 @@ import spray.routing._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util._
 
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
+
 class StreamActor extends Actor with StreamService {
   def actorRefFactory = context
 
@@ -30,14 +33,14 @@ trait StreamService extends HttpService with TweetFunctions {
       get {
         respondWithMediaType(`application/json`)
         complete {
-          getAverages.toJson
+          compact(render(getAverages.toJson))
         }
       }
     }~
     path("overtime") {
       get {
         respondWithMediaType(`application/json`)
-        complete(getOvertime.toJson)
+        complete(compact(render(getOvertime.toJson)))
       }
     }~
     path("toplist") {
@@ -46,7 +49,7 @@ trait StreamService extends HttpService with TweetFunctions {
           respondWithMediaType(`application/json`)
           onComplete(getTopLists(q)) {
             case Success(topList) =>
-              complete(topList.toJson)
+              complete(compact(render(topList.toJson)))
             case Failure(ex) =>
               complete("""{"error":"could not complete"}""")
           }

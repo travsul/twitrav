@@ -71,31 +71,24 @@ trait TweetFunctions {
 
   def getTopUrl(n: Int): Future[List[Occurrence]] = {
     repository.getDomains
-              .map { domains =>
-                getOccurrence(domains,n)
-              }
+              .map(d=>getOccurrence(d,n))
   }
 
   def getTopHashtags(n: Int): Future[List[Occurrence]] = {
     repository.getHashtags
-              .map { hashtags =>
-                getOccurrence(hashtags,n)
-              }
+              .map(h=>getOccurrence(h,n))
   }
 
   def getTopEmoji(n: Int): Future[List[Occurrence]] = {
     repository.getEmojis
-              .map { emojis =>
-                getOccurrence(emojis,n)
-              }
+              .map(em=>getOccurrence(em,n))
   }
 
   def getOvertime: Overtime = {
     Overtime(
       seconds = getSecondAvg,
       minutes = getMinuteAvg,
-      hours = getHourAvg
-    )
+      hours = getHourAvg)
   }
 
   def getAverages: Averages = {
