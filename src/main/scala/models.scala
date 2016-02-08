@@ -56,6 +56,12 @@ case class Tweet(
   hashtags: List[String]
 )
 
+object Tweet {
+  def empty: Tweet = {
+    Tweet(0,"",false,false,false,Nil,Nil,Nil)
+  }
+}
+
 case class Averages(
   url: Int,
   hashtag: Int,

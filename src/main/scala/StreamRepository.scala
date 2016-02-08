@@ -9,7 +9,7 @@ import scala.concurrent._
 trait TweetRepository {
   def getTweets: List[Tweet]
   def addTweet(tweet: Tweet): Future[Tweet]
-  def deleteTweet(id: Long): Future[Option[Tweet]]
+  def deleteTweet(id: Long): Future[Tweet]
   def getEmojis: Future[List[String]]
   def getDomains: Future[List[String]]
   def getHashtags: Future[List[String]]
